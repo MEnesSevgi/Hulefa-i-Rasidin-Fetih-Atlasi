@@ -2,45 +2,106 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Hulefa-i Raşidin Fetih Atlası</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <style>
         :root { 
-            --ebubekir-color: #0d47a1; /* Mavi */
-            --omer-color: #b71c1c;    /* Kırmızı */
-            --osman-color: #2e7d32;   /* Yeşil */
-            --paper-light: #f4f1ea;   
-            --deep-brown: #4e342e;
+            --ebubekir-color: #0d47a1; 
+            --omer-color: #b71c1c; 
+            --osman-color: #2e7d32; 
+            --paper-light: #f4f1ea; 
+            --deep-brown: #4e342e; 
         }
-        body { margin: 0; display: flex; height: 100vh; font-family: 'Georgia', serif; background: var(--paper-light); }
-        #map { flex: 1; height: 100%; filter: sepia(0.3) contrast(0.9) brightness(0.9); } 
+
+        * { box-sizing: border-box; }
+
+        body { 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            font-family: 'Georgia', serif; 
+            background: var(--paper-light); 
+            overflow: hidden; /* Masaüstünde taşmayı önler */
+        }
+
+        /* Responsive Layout için Ana Yapı */
+        #main-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            flex-direction: row;
+        }
+
+        #map { 
+            flex: 1; 
+            height: 100%; 
+          
+            z-index: 1;
+        }
+
         #info-panel { 
-            width: 420px; padding: 0; background: #fff; display: flex; 
-            flex-direction: column; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 1000;
+            width: 420px; 
+            background: #fff; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: -5px 0 20px rgba(0,0,0,0.2); 
+            z-index: 1000;
             border-left: 2px solid var(--deep-brown);
+            transition: all 0.3s ease;
         }
-        .header { background: var(--deep-brown); color: #d4af37; padding: 20px; text-align: center; border-bottom: 4px solid #d4af37; }
-        .header h1 { margin: 0; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
-        
+
+        /* --- MOBİL UYUMLULUK (Responsive) --- */
+        @media (max-width: 850px) {
+            body { 
+                overflow-y: auto; /* Mobilde aşağı kaydırmaya izin ver */
+                height: auto; 
+            }
+            #main-wrapper { 
+                flex-direction: column; /* Üst üste diz */
+                height: auto;
+            }
+            #map { 
+                height: 50vh; /* Harita ekranın yarısını kaplasın */
+                width: 100%; 
+                flex: none;
+            }
+            #info-panel { 
+                width: 100%; 
+                height: auto; 
+                border-left: none; 
+                border-top: 4px solid var(--deep-brown);
+            }
+            #wiki-content {
+                max-height: 500px; /* İçeriğin çok uzayıp haritayı kaybetmemesi için */
+            }
+        }
+
+        .header { background: var(--deep-brown); color: #d4af37; padding: 15px; text-align: center; border-bottom: 4px solid #d4af37; }
+        .header h1 { margin: 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
+
         .control-area { padding: 15px; background: #f9f9f9; border-bottom: 1px solid #ddd; }
         .filter-group { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .filter-item { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .filter-item { display: flex; align-items: center; cursor: pointer; font-size: 13px; font-weight: bold; }
         .filter-item input { margin-right: 10px; width: 18px; height: 18px; cursor: pointer; }
 
         select { 
             width: 100%; padding: 10px; border-radius: 4px; border: 2px solid var(--deep-brown);
             font-size: 14px; outline: none; background: white; cursor: pointer;
         }
+
+        #wiki-content { padding: 25px; overflow-y: auto; flex: 1; background: #ffffff; }
+        #wiki-title { margin-top: 0; color: #333; font-size: 22px; border-bottom: 2px solid #d4af37; padding-bottom: 10px; }
         
-        #wiki-content { padding: 30px; overflow-y: auto; flex: 1; background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png'); }
-        #wiki-title { margin-top: 0; color: #333; font-size: 24px; border-bottom: 2px solid #d4af37; padding-bottom: 10px; }
         .era-badge { 
-            display: inline-block; color: white; padding: 5px 15px; 
-            border-radius: 4px; font-size: 11px; margin-bottom: 12px; font-weight: bold;
+            display: inline-block; color: white; padding: 5px 12px; 
+            border-radius: 4px; font-size: 10px; margin-bottom: 12px; font-weight: bold;
             text-transform: uppercase;
         }
-        #wiki-text { text-align: justify; color: #222; line-height: 1.8; font-size: 15.5px; }
+
+        #wiki-text { text-align: justify; color: #222; line-height: 1.6; font-size: 15px; }
 
         .number-icon {
             border: 2px solid white; border-radius: 50%;
@@ -52,17 +113,17 @@
         .marker-omer { background: var(--omer-color); }
         .marker-osman { background: var(--osman-color); }
 
-        #wiki-footer { padding: 20px; border-top: 1px solid #eee; background: #f9f9f9; display: none; }
+        #wiki-footer { padding: 15px; border-top: 1px solid #eee; background: #f9f9f9; display: none; }
         .wiki-btn {
             display: block; width: 100%; padding: 12px; background: var(--deep-brown);
             color: #d4af37; text-decoration: none; text-align: center; border-radius: 4px;
             font-weight: bold; transition: 0.3s; border: 1px solid #d4af37;
         }
-        .wiki-btn:hover { background: #3d2924; color: #fff; }
     </style>
 </head>
 <body>
 
+<div id="main-wrapper">
     <div id="map"></div>
 
     <div id="info-panel">
@@ -78,15 +139,15 @@
             <div class="filter-group">
                 <label class="filter-item">
                     <input type="checkbox" class="era-filter" value="Hz. Ebubekir Dönemi" checked> 
-                    <span style="color: var(--ebubekir-color);">Hz. Ebubekir Dönemi ✔</span>
+                    <span style="color: var(--ebubekir-color);">Hz. Ebubekir Dönemi</span>
                 </label>
                 <label class="filter-item">
                     <input type="checkbox" class="era-filter" value="Hz. Ömer Dönemi" checked> 
-                    <span style="color: var(--omer-color);">Hz. Ömer Dönemi ✔</span>
+                    <span style="color: var(--omer-color);">Hz. Ömer Dönemi</span>
                 </label>
                 <label class="filter-item">
                     <input type="checkbox" class="era-filter" value="Hz. Osman Dönemi" checked> 
-                    <span style="color: var(--osman-color);">Hz. Osman Dönemi ✔</span>
+                    <span style="color: var(--osman-color);">Hz. Osman Dönemi</span>
                 </label>
             </div>
         </div>
@@ -99,21 +160,25 @@
                 <br><br>
                 <strong>Önemli Dönüm Noktaları:</strong>
                 <ul>
-                    <li><strong>Hz. Ebubekir(632 – 634):</strong> Hire'nin fethi ve Suriye kapıları.</li>
+                    <li><strong>Hz. Ebubekir(632 – 634):</strong> Hire'nin fethi.</li>
                     <li><strong>Hz. Ömer(634 – 644):</strong> Kadisiye ve Nihavend ile Sasani çöküşü.</li>
                     <li><strong>Hz. Osman(644 – 656):</strong> Zatüs Savari ile denizlerde hakimiyet.</li>
                 </ul>
             </div>
         </div>
+        
         <div id="wiki-footer">
             <a id="wiki-link" href="#" target="_blank" class="wiki-btn">Wikipedia'da Detaylı Bilgi</a>
         </div>
     </div>
+</div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const fetihler = [
-       
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<script>
+    // Fetih verilerini buraya kendi listenle ekleyebilirsin. Örnek:
+    const fetihler = [
+             
  // --- HZ. EBUBEKİR DÖNEMİ (1 - 14) ---
 { order: 1, name: "Übülle", era: "Hz. Ebubekir Dönemi", date: "633", lat: 30.4333, lng: 47.9333, color: "marker-ebubekir", desc: "Irak seferinin başlangıç noktası.", wikiUrl: "" },
 { order: 2, name: "Hübeyre", era: "Hz. Ebubekir Dönemi", date: "633", lat: 29.3697, lng: 47.9783, color: "marker-ebubekir", desc: "Zatü's-Selasil zaferi.", wikiUrl: "" },
@@ -264,83 +329,105 @@
 { order: 42, name: "Zatü's-Savari", era: "Hz. Osman Dönemi", date: "655", lat: 33.5, lng: 31.0, color: "marker-osman", desc: "Bizans donanmasının Akdeniz'de ağır yenilgiye uğratıldığı deniz savaşı.", wikiUrl: "" }
         ];
 
-        const map = L.map('map').setView([32.0, 45.0], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png').addTo(map);
+   const map = L.map('map', { preferCanvas: true }).setView([32.0, 45.0], 4);
+   // Ekran genişliğini kontrol et
+const isMobile = window.innerWidth <= 850;
 
-        const select = document.getElementById('eventSelect');
-        const wikiTitle = document.getElementById('wiki-title');
-        const wikiText = document.getElementById('wiki-text');
-        const eraBadge = document.getElementById('era-badge');
-        const wikiFooter = document.getElementById('wiki-footer');
-        const wikiLink = document.getElementById('wiki-link');
-        
-        let activeMarkers = [];
+// Mobilde hızlı (CartoDB), Masaüstünde detaylı (OpenStreetMap) altlık kullan
+const altlikUrl = isMobile 
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' 
+    : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
 
-        function renderMarkers() {
-            // Temizleme
-            activeMarkers.forEach(m => map.removeLayer(m));
-            activeMarkers = [];
-            
-            const selectedEras = Array.from(document.querySelectorAll('.era-filter:checked')).map(cb => cb.value);
+L.tileLayer(altlikUrl).addTo(map);
 
-            fetihler.forEach(f => {
-                if (selectedEras.includes(f.era)) {
-                    const icon = L.divIcon({
-                        className: 'custom-icon',
-                        html: `<div class='number-icon ${f.color}'>${f.order}</div>`,
-                        iconSize: [30, 30]
-                    });
+    const select = document.getElementById('eventSelect');
+    const wikiTitle = document.getElementById('wiki-title');
+    const wikiText = document.getElementById('wiki-text');
+    const eraBadge = document.getElementById('era-badge');
+    const wikiFooter = document.getElementById('wiki-footer');
+    const wikiLink = document.getElementById('wiki-link');
+    
+    let activeMarkers = [];
+const clusters = L.markerClusterGroup(); 
+map.addLayer(clusters); 
 
-                    const marker = L.marker([f.lat, f.lng], {icon: icon}).addTo(map);
-                    marker.on('click', () => updateInfo(f));
-                    activeMarkers.push(marker);
-                }
+function renderMarkers() {
+    clusters.clearLayers();
+    // Eskiden kalan markerları haritadan temizle (Masaüstü için gerekli)
+    activeMarkers.forEach(m => map.removeLayer(m));
+    activeMarkers = [];
+    
+    const selectedEras = Array.from(document.querySelectorAll('.era-filter:checked')).map(cb => cb.value);
+    const isMobile = window.innerWidth <= 850;
+
+    fetihler.forEach(f => {
+        if (selectedEras.includes(f.era)) {
+            const icon = L.divIcon({
+                className: 'custom-icon',
+                html: `<div class='number-icon ${f.color}'>${f.order}</div>`,
+                iconSize: [30, 30]
             });
-        }
 
-        function updateInfo(f) {
-            wikiTitle.innerText = f.name;
-            wikiText.innerHTML = `<strong>Tarih:</strong> ${f.date}<br><strong>Dönem:</strong> ${f.era}<br><br>${f.desc}`;
-            eraBadge.innerText = f.era;
+            const marker = L.marker([f.lat, f.lng], {icon: icon});
+            marker.on('click', () => updateInfo(f));
             
-            if (f.wikiUrl && f.wikiUrl.trim() !== "") {
-                wikiFooter.style.display = "block";
-                wikiLink.href = f.wikiUrl;
+            if (isMobile) {
+                // MOBİLDE: Kümeye ekle (Kasmayı önler)
+                clusters.addLayer(marker);
             } else {
-                wikiFooter.style.display = "none";
+                // MASAÜSTÜNDE: Doğrudan haritaya ekle (Hepsini tek tek gör)
+                marker.addTo(map);
             }
-            
-            const colors = { 
-                "Hz. Ebubekir Dönemi": "var(--ebubekir-color)", 
-                "Hz. Ömer Dönemi": "var(--omer-color)",
-                "Hz. Osman Dönemi": "var(--osman-color)" 
-            };
-            
-            eraBadge.style.background = colors[f.era] || "#333";
-            map.flyTo([f.lat, f.lng], 7);
+            activeMarkers.push(marker);
         }
+    });
+}
 
-        // Dropdown doldur
-        fetihler.forEach(f => {
-            const opt = document.createElement('option');
-              opt.value = `${f.order}|${f.era}`;
-           opt.textContent = `${f.order}. ${f.name} (${f.era})`;
-            select.appendChild(opt);
-        });
+    function updateInfo(f) {
+        wikiTitle.innerText = f.name;
+        wikiText.innerHTML = `<strong>Tarih:</strong> ${f.date}<br><strong>Dönem:</strong> ${f.era}<br><br>${f.desc}`;
+        eraBadge.innerText = f.era;
+        
+        if (f.wikiUrl && f.wikiUrl.trim() !== "") {
+            wikiFooter.style.display = "block";
+            wikiLink.href = f.wikiUrl;
+        } else {
+            wikiFooter.style.display = "none";
+        }
+        
+        const colors = { 
+            "Hz. Ebubekir Dönemi": "var(--ebubekir-color)", 
+            "Hz. Ömer Dönemi": "var(--omer-color)", 
+            "Hz. Osman Dönemi": "var(--osman-color)" 
+        };
+        eraBadge.style.background = colors[f.era] || "#333";
+        map.flyTo([f.lat, f.lng], 10);
 
-        // Event Listeners
-        select.addEventListener('change', (e) => {
-           const [order, era] = e.target.value.split('|');
-const selected = fetihler.find(f => f.order == order && f.era == era);
-            if(selected) updateInfo(selected);
-        });
+        // Mobilde bir noktaya tıklandığında bilgi paneline kaydır
+        if (window.innerWidth <= 850) {
+            document.getElementById('info-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 
-        document.querySelectorAll('.era-filter').forEach(cb => {
-            cb.addEventListener('change', renderMarkers);
-        });
+    fetihler.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = `${f.order}|${f.era}`;
+        opt.textContent = `${f.order}. ${f.name} (${f.era})`;
+        select.appendChild(opt);
+    });
 
-        // Başlangıç
-        renderMarkers();
-    </script>
+    select.addEventListener('change', (e) => {
+        if (!e.target.value) return;
+        const [order, era] = e.target.value.split('|');
+        const selected = fetihler.find(f => f.order == order && f.era == era);
+        if(selected) updateInfo(selected);
+    });
+
+    document.querySelectorAll('.era-filter').forEach(cb => {
+        cb.addEventListener('change', renderMarkers);
+    });
+
+    renderMarkers();
+</script>
 </body>
 </html>
