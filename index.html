@@ -334,9 +334,7 @@
 const isMobile = window.innerWidth <= 850;
 
 // Mobilde hızlı (CartoDB), Masaüstünde detaylı (OpenStreetMap) altlık kullan
-const altlikUrl = isMobile 
-    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' 
-    : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 L.tileLayer(altlikUrl).addTo(map);
 
