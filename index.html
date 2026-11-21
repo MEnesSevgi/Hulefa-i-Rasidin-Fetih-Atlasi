@@ -331,13 +331,10 @@
 
    const map = L.map('map', { preferCanvas: true }).setView([32.0, 45.0], 4);
    // Ekran genişliğini kontrol et
-
-
 const isMobile = window.innerWidth <= 850;
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-L.tileLayer(altlikUrl).addTo(map);
 
     const select = document.getElementById('eventSelect');
     const wikiTitle = document.getElementById('wiki-title');
